@@ -1,3 +1,4 @@
-streamlit
+# requirements.txt
 numpy
 matplotlib
+streamlit
