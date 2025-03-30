@@ -19,20 +19,20 @@ def generate_single_beat(fs=500):
 def assemble_ecg(rhythm_type="Sinus", length_sec=10, bpm=75, fs=500):
     num_beats = int(length_sec * bpm / 60)
     beat = generate_single_beat(fs)
-    silence = np.zeros(int(fs * (60 / bpm) - len(beat)))
     ecg = []
+
+    interval_samples = int(fs * (60 / bpm))
+    silence_len = max(0, interval_samples - len(beat))
+    silence = np.zeros(silence_len)
 
     for i in range(num_beats):
         if rhythm_type == "AV Block Type 2" and i % 4 == 3:
-            # Simulate dropped beat
-            ecg.extend(np.zeros(len(beat) + len(silence)))
+            ecg.extend(np.zeros(len(beat) + silence_len))  # dropped beat
         elif rhythm_type == "Atrial Fibrillation":
-            # Irregular RR intervals
-            irr_gap = np.random.randint(int(0.6 * fs), int(1.2 * fs))
-            gap = np.zeros(irr_gap)
-            ecg.extend(beat.tolist() + gap.tolist())
+            irr_gap_len = np.random.randint(int(0.6 * fs), int(1.2 * fs))
+            irr_gap = np.zeros(max(0, irr_gap_len - len(beat)))
+            ecg.extend(beat.tolist() + irr_gap.tolist())
         elif rhythm_type == "VTach":
-            # Sharp sawtooth wave for VTach
             vt_wave = np.tile([1, -1], int(fs / bpm))
             ecg.extend(vt_wave[:len(beat)])
         else:
